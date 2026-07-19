@@ -1,0 +1,50 @@
+# Dependency directories
+node_modules/
+.venv/
+env/
+venv/
+ENV/
+
+# Python caching
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Local databases
+*.db
+*.db-journal
+trafficeye.db
+trafficeye.db-journal
+
+# Build directories
+dist/
+build/
+.cache/
+
+# Environments / Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE configurations
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS metadata
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# App logs and tasks
+logs/
+*.log
+.system_generated/

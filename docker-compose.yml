@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  # 1. Database Store (PostgreSQL)
+  postgres:
+    image: postgres:15-alpine
+    container_name: trafficeye_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: trafficeye
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Cache & Telemetry Broker (Redis)
+  redis:
+    image: redis:7-alpine
+    container_name: trafficeye_redis
+    ports:
+      - "6379:6379"
+
+  # 3. Zookeeper for Kafka Coordination
+  zookeeper:
+    image: bitnami/zookeeper:latest
+    container_name: trafficeye_zookeeper
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports:
+      - "2181:2181"
+
+  # 4. Message Streaming Queue (Apache Kafka)
+  kafka:
+    image: bitnami/kafka:latest
+    container_name: trafficeye_kafka
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://0.0.0.0:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+
+  # 5. REST & WebSockets Backend (FastAPI)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: trafficeye_backend
+    environment:
+      - DATABASE_URL=postgresql://postgres:password123@postgres/trafficeye
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - ENABLE_KAFKA=True
+      - ENABLE_REDIS=True
+      - REDIS_URL=redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+
+  # 6. AI Computer Vision Pipeline
+  ai_pipeline:
+    build:
+      context: ./ai
+      dockerfile: Dockerfile
+    container_name: trafficeye_ai_pipeline
+    environment:
+      - BACKEND_URL=http://backend:8000
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./ai/assets:/app/ai/assets
+    depends_on:
+      - backend
+
+  # 7. Web Dashboard User Interface (React + Tailwind)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: trafficeye_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
