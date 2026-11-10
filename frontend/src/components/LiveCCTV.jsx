@@ -34,7 +34,17 @@ export default function LiveCCTV() {
           setSelectedCamera(res.data[0]);
         }
       })
-      .catch(err => console.error("Error loading cameras:", err));
+      .catch(err => {
+        console.error("Error loading cameras:", err);
+        const fallback = [
+          { id: 1, location: 'Gandhipuram Junction, Coimbatore', stream_url: 'gandhipuram.mp4' },
+          { id: 2, location: 'Hope College Circle, Coimbatore', stream_url: 'hope_college.mp4' },
+          { id: 3, location: 'Avinashi Road Crossing, Coimbatore', stream_url: 'avinashi.mp4' },
+          { id: 4, location: 'Ukkadam Bus Stand, Coimbatore', stream_url: 'ukkadam.mp4' }
+        ];
+        setCameras(fallback);
+        setSelectedCamera(fallback[0]);
+      });
 
     // Listen to real-time vehicle logs
     const unsubscribeTraffic = subscribe('traffic', (payload) => {

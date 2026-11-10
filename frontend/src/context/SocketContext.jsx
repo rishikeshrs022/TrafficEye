@@ -49,7 +49,37 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     connect();
+
+    // Fallback simulation timer for static deployment environments (e.g. GitHub Pages)
+    const simInterval = setInterval(() => {
+      if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
+        setIsConnected(true);
+        // Dispatch mock traffic update
+        if (listenersRef.current['traffic']) {
+          listenersRef.current['traffic'].forEach(cb => cb({
+            camera_id: 1,
+            lane_id: Math.floor(Math.random() * 3) + 1,
+            vehicle_count: Math.floor(Math.random() * 5) + 1,
+            avg_speed: Math.floor(Math.random() * 20) + 25,
+            density: Math.floor(Math.random() * 40) + 20,
+            status: 'Medium'
+          }));
+        }
+        // Dispatch mock aqi update
+        if (listenersRef.current['aqi']) {
+          listenersRef.current['aqi'].forEach(cb => cb({
+            location: 'Gandhipuram Junction, Coimbatore',
+            aqi: Math.floor(Math.random() * 30) + 120,
+            pm2_5: 58,
+            pm10: 104,
+            co: 1.8
+          }));
+        }
+      }
+    }, 3000);
+
     return () => {
+      clearInterval(simInterval);
       if (socketRef.current) {
         socketRef.current.close();
       }

@@ -27,6 +27,14 @@ export default function SignalController() {
         }
       } catch (err) {
         console.error("Error loading signals:", err);
+        const fallback = [
+          { id: 1, location: 'Gandhipuram Junction', current_state: 'RED', green_time: 30, red_time: 30, is_adaptive: true },
+          { id: 2, location: 'Hope College Circle', current_state: 'GREEN', green_time: 40, red_time: 20, is_adaptive: true },
+          { id: 3, location: 'Avinashi Road Crossing', current_state: 'RED', green_time: 30, red_time: 35, is_adaptive: true },
+          { id: 4, location: 'Ukkadam Bus Stand', current_state: 'RED', green_time: 25, red_time: 30, is_adaptive: true }
+        ];
+        setSignals(fallback);
+        setSelectedSignal(fallback[0]);
       }
     };
 
