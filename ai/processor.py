@@ -5,7 +5,7 @@ import logging
 import threading
 import requests
 import numpy as np
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 import urllib.parse
 from .detector import YOLOVehicleDetector
 from .tracker import IoUTracker
@@ -60,7 +60,7 @@ class MJPEGStreamHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
 def start_mjpeg_server():
-    server = HTTPServer(("0.0.0.0", MJPEG_PORT), MJPEGStreamHandler)
+    server = ThreadingHTTPServer(("0.0.0.0", MJPEG_PORT), MJPEGStreamHandler)
     logger.info(f"MJPEG CCTV Stream Server listening on http://localhost:{MJPEG_PORT}/video_feed")
     server.serve_forever()
 
